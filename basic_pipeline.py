@@ -4,6 +4,19 @@ from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_squared_error, r2_score
 
+
+def getNoOfCalls():
+    # Step 3: Feature Engineering incoming file has columns named as 'uptime', 'nd_name' and 'count' 't_7_count' -->
+    # no of calls on the (t-7)th day 't_7_sum_count' --> sum of calls last 7 days from today (sum of [ t_7_count,
+    # t_6_count, t_5_count, t_4_count, t_3_count, t_2_count, t_1_count ] ) we need to create dateset with columns
+    # named as 'nd_name', 't_7_count', 't_4_count', 't_2_count', 't_1_count', 't_count' from incoming file as
+    # intermediate step
+    # each line in the file is a record for a day
+    # if there is no call on a day then count
+
+    return data
+
+
 # Step 1: Data Collection
 data_call = pd.read_csv('/Users/ezgi-lab/MLPipeline/data/atasehir.csv')
 
@@ -11,10 +24,7 @@ data_call = pd.read_csv('/Users/ezgi-lab/MLPipeline/data/atasehir.csv')
 # Assuming the dataset is already clean, we skip this step in this example.
 
 # Step 3: Feature Engineering
-# incoming file has columns named as 'uptime', 'nd_name' and 'count'
-# we need to create dateset with columns named as 't_7_count', 't_1_count', 't_count'
-# from incoming file as intermediate step
-data = pd.read_csv('dataset.csv')
+data = getNoOfCalls()
 
 # Step 4: Model Selection and Training
 # Splitting the dataset into features (X) and target variable (y)
@@ -40,7 +50,6 @@ df.plot(kind='bar', figsize=(10, 8))
 plt.grid(which='major', linestyle='-', linewidth='0.5', color='green')
 plt.grid(which='minor', linestyle=':', linewidth='0.5', color='black')
 plt.show()
-
 
 # Calculating evaluation metrics
 mse = mean_squared_error(y_test, y_pred)
