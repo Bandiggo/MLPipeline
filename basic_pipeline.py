@@ -5,16 +5,26 @@ from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_squared_error, r2_score
 
 
-def getNoOfCalls():
-    # Step 3: Feature Engineering incoming file has columns named as 'uptime', 'nd_name' and 'count' 't_7_count' -->
-    # no of calls on the (t-7)th day 't_7_sum_count' --> sum of calls last 7 days from today (sum of [ t_7_count,
-    # t_6_count, t_5_count, t_4_count, t_3_count, t_2_count, t_1_count ] ) we need to create dateset with columns
-    # named as 'nd_name', 't_7_count', 't_4_count', 't_2_count', 't_1_count', 't_count' from incoming file as
-    # intermediate step
-    # each line in the file is a record for a day
-    # if there is no call on a day then count
+def getNoOfCalls(data_call_pd):
 
-    return data
+    # create a dataframe with columns named as 'nd_name', 'uptime' and 'count'
+    data_to_return = pd.DataFrame(columns=['nd_name', 'up_time', 'count'])
+
+    # for each nd_name in data_call
+    for nd_name in data_call_pd['nd_name'].unique():
+        date_range = pd.date_range(start='2023-01-01', end='2023-01-31')
+        temp_pd = pd.DataFrame(date_range, columns=['up_time'])
+        temp_pd['nd_name'] = nd_name
+        temp_pd['count'] = 0
+        data_to_return = data_to_return.append(temp_pd)
+
+    data_to_return = data_to_return.join(data_call_pd.set_index(['nd_name', 'up_time']), on=['nd_name', 'up_time'])
+
+    print(data_to_return.head())
+
+    return data_to_return
+
+
 
 
 # Step 1: Data Collection
@@ -24,7 +34,7 @@ data_call = pd.read_csv('/Users/ezgi-lab/MLPipeline/data/atasehir.csv')
 # Assuming the dataset is already clean, we skip this step in this example.
 
 # Step 3: Feature Engineering
-data = getNoOfCalls()
+data = getNoOfCalls(data_call)
 
 # Step 4: Model Selection and Training
 # Splitting the dataset into features (X) and target variable (y)

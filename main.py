@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+import basic_pipeline
 
 app = FastAPI()
 
