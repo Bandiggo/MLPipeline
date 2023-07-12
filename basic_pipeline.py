@@ -23,7 +23,42 @@ def getNoOfCalls(data_call_pd):
     data_to_return = pd.concat(frames)
 
     # group by nd_name and up_time, get sum of count
-    data_to_return = data_to_return.groupby(['nd_name', 'up_time'])['count'].sum().reset_index()
+    data_to_return = data_to_return.groupby(['nd_name', pd.Grouper(key='up_time', freq='H')])['count'].sum().reset_index(name='sum_count')
+
+    # group  by node_name and log_date frequency D and create a list of sum_count
+    _list = data_to_return.groupby(['nd_name', pd.Grouper(key='up_time', freq='D')])['sum_count'] \
+        .agg(lambda x: list(x)).reset_index(name='list_call_no')
+    data_to_return = pd.DataFrame(_list, columns=['node_name', 'up_time', 'list_call_no'])
+
+    data_to_return['list_call_no'] = data_to_return['list_call_no'].apply(lambda x: np.array(x)).to_numpy()
+
+    matrix = node_data_frame['list_call_no']
+
+    # series with column t-1, t-2, t-3, t
+    daily_call_number = pd.DataFrame(columns=['t-6', 't-5', 't-4', 't-3', 't-2', 't-1', 't'])
+
+    for j in range(0, np.size(matrix)):
+        # pad the array with zeros  to make it 24 hours
+        matrix[j] = np.pad(matrix[j], (0, 24 - np.size(matrix[j])), 'constant', constant_values=(0, 0))
+        daily_call_number.loc[j] = [get_call_in_day(matrix, j-6), get_call_in_day(matrix, j-5),
+                          get_call_in_day(matrix, j-4), get_call_in_day(matrix, j-3),
+                          get_call_in_day(matrix, j-2),
+                          get_call_in_day(matrix, j-1), get_call_in_day(matrix, j)]
+
+     matrix = np.vstack(matrix)
+
+     # softmax normalization
+     matrix = softmax(np.float64(matrix))
+
+     # save the matrix as a csv file
+     np.savetxt("Data/CallDataMatrix_" + nd_name + ".csv",
+                       matrix,
+                       delimiter=",")
+
+     # save the daily_call_number as a csv file
+     daily_call_number.to_csv(
+                "CallPrediction/Data/DailyCallNumber_" + nd_name + ".csv", index=False)
+
 
     #write to csv
     data_to_return.to_csv('/Users/ezgi-lab/MLPipeline/data/atasehir_input.csv', index=False)
